@@ -1,6 +1,8 @@
 'use client'
 
+
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import { getAuthUser, logout } from '@/lib/auth'
 import RecordSessionForm from '@/components/RecordSessionForm'
@@ -71,12 +73,20 @@ export default function GMDashboard() {
               <h1 className="text-2xl font-bold text-gray-900">KITAA Game Master</h1>
               <p className="text-sm text-gray-600">{user?.name}</p>
             </div>
-            <button
-              onClick={logout}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-            >
-              Logout
-            </button>
+            <div className="flex gap-3">
+              <Link 
+                href="/leaderboard"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                🏆 Leaderboard
+              </Link>
+              <button
+                onClick={logout}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              >
+                Logout
+              </button>
+            </div>
           </div>
         </header>
 
