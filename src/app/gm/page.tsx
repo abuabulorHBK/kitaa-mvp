@@ -5,6 +5,7 @@ import ProtectedRoute from '@/components/ProtectedRoute'
 import { getAuthUser, logout } from '@/lib/auth'
 import RecordSessionForm from '@/components/RecordSessionForm'
 import SessionHistory from '@/components/SessionHistory'
+import AddPlayerForm from '@/components/AddPlayerForm'
 import { supabase } from '@/lib/supabase'
 
 export default function GMDashboard() {
@@ -14,6 +15,7 @@ export default function GMDashboard() {
     todayRevenue: 0,
     totalPlayers: 0
   })
+  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
     const authUser = getAuthUser()
@@ -22,24 +24,21 @@ export default function GMDashboard() {
     if (authUser?.lounge_id) {
       loadStats(authUser.lounge_id)
     }
-  }, [])
+  }, [refreshKey])
 
   async function loadStats(loungeId: string) {
-    // Get lounge data
     const { data: lounge } = await supabase
       .from('lounges')
       .select('total_sessions_count, total_session_revenue')
       .eq('id', loungeId)
       .single()
 
-    // Get player count
     const { count: playerCount } = await supabase
       .from('players')
       .select('*', { count: 'exact', head: true })
       .eq('lounge_id', loungeId)
       .eq('active', true)
 
-    // Get today's sessions
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     
@@ -56,6 +55,11 @@ export default function GMDashboard() {
       todayRevenue,
       totalPlayers: playerCount || 0
     })
+  }
+
+  function handlePlayerAdded() {
+    setRefreshKey(prev => prev + 1)
+    alert('Player added successfully!')
   }
 
   return (
@@ -77,7 +81,6 @@ export default function GMDashboard() {
         </header>
 
         <main className="max-w-7xl mx-auto px-4 py-8">
-          {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="bg-white p-6 rounded-lg shadow">
               <h3 className="text-gray-600 text-sm font-medium">Today's Sessions</h3>
@@ -95,12 +98,21 @@ export default function GMDashboard() {
             </div>
           </div>
 
-          {/* Record Session Form */}
-          {user?.lounge_id && (
-            <div className="mb-8">
+          {/* Two Column Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            {/* Record Session */}
+            {user?.lounge_id && (
               <RecordSessionForm loungeId={user.lounge_id} />
-            </div>
-          )}
+            )}
+
+            {/* Add Player */}
+            {user?.lounge_id && (
+              <AddPlayerForm 
+                loungeId={user.lounge_id} 
+                onPlayerAdded={handlePlayerAdded}
+              />
+            )}
+          </div>
 
           {/* Session History */}
           {user?.lounge_id && (
